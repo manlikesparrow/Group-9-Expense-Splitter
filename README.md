@@ -33,13 +33,13 @@ The Expense Splitter App allows users to add group members, record shared expens
 Clone the repository and install dependencies:
 
 In Terminal: 
-git clone https://github.com/YOUR-ORG/group09-expense-splitter.git
-cd group09-expense-splitter
-pipenv install
-pipenv shell
+-git clone https://github.com/YOUR-ORG/group09-expense-splitter.git
+-cd Group-9-Expense-Splitter
+-pip install
+-pipenv install
 
 Run the app:
-python src/app.py
+python src/main.py
 
 Run tests:
 pytest -q
