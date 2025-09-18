@@ -21,7 +21,7 @@ The Expense Splitter App allows users to add group members, record shared expens
 Clone the repository and install dependencies:
 
 In Terminal: 
--git clone https://github.com/manlikesparrow/group09-expense-splitter.git
+-git clone https://github.com/manlikesparrow/Group-9-Expense-Splitter.git
 -cd Group-9-Expense-Splitter
 -pip install
 -pipenv install
