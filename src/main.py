@@ -6,13 +6,15 @@ except ImportError:
 
 def demo():
     g = Group("Trip")
-    g.add_member("Alice")
-    g.add_member("Bob")
-    g.add_member("Carol")
+    g.add_member("Israel")
+    g.add_member("Jomi")
+    g.add_member("Meena")
+    g.add_member("Clinton")
 
-    g.add_expense(Expense(90, "Alice", ["Alice","Bob","Carol"], "Hotel", category="Lodging"))
-    g.add_expense(Expense(60, "Bob", ["Alice","Bob"], "Dinner", category="Food"))
-    g.add_expense(Expense(30, "Carol", ["Bob","Carol"], "Snacks", category="Food"))
+    g.add_expense(Expense(90, "Israel", ["Israel","Jomi","Meena", "Clinton"], "Hotel", category="Lodging"))
+    g.add_expense(Expense(60, "Jomi", ["Israel","Jomi"], "Dinner", category="Food"))
+    g.add_expense(Expense(30, "Meena", ["Jomi","Meena"], "Snacks", category="Food"))
+    g.add_expense(Expense(15, "Clinton", ["Meena","Clinton" ], "Drinks", category="Food"))
 
     print("=== Balances ===")
     balances = g.net_balances()

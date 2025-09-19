@@ -1,10 +1,19 @@
-# Group 9: Expense Splitter App
+# Group-9-Expense-Splitter-App
 
-📌 Project Summary
+📌Project Summary
 
 The Expense Splitter App allows users to add group members, record shared expenses, and automatically compute simplified “who owes who” settlements. This helps groups split bills fairly without confusion.
 
+ ⚙️Setup Instructions
+ 
+Requirements
+Python 3.10+
+pipenv (for dependency management)
 
+# Group 9: Expense Splitter App
+
+📌 Project Summary
+The Expense Splitter App allows users to add group members, record shared expenses, and automatically compute simplified “who owes who” settlements. This helps groups split bills fairly without confusion.
 
 🎯 MVP Acceptance Criteria
 - A user can add a group and expenses.
@@ -22,9 +31,10 @@ The Expense Splitter App allows users to add group members, record shared expens
 
 🚀 Setup & Run Instructions
 Clone the repository and install dependencies:
-In Terminal:
+
+In Terminal: 
 git clone https://github.com/manlikesparrow/Group-9-Expense-Splitter.git
-cd Group9-Expense-Splitter
+cd group09-expense-splitter
 pipenv install
 pipenv shell
 
