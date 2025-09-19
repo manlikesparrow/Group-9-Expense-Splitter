@@ -1,4 +1,4 @@
-# src/core.py
+from datetime import datetime
 
 class ExpenseError(Exception):
     """Custom exception for expense-related errors."""
@@ -6,18 +6,23 @@ class ExpenseError(Exception):
 
 
 class Expense:
-    def __init__(self, amount: float, payer: str, participants: list[str], description: str = ""):
-        if amount <= 0:
+    def __init__(self, amount, payer, participants, description="",
+                 category="Uncategorized", date=None):
+        if float(amount) <= 0:
             raise ExpenseError("Amount must be positive")
         if not participants:
             raise ExpenseError("Expense must have at least one participant")
-        self.amount = amount
+
+        self.amount = float(amount)
         self.payer = payer
         self.participants = participants
         self.description = description
+        self.category = category
+        # ensure date is a date object (or a datetime.date-like)
+        self.date = date or datetime.now().date()
 
     def __repr__(self):
-        return f"<Expense {self.amount} by {self.payer} for {self.participants}>"
+        return f"<Expense {self.amount:.2f} by {self.payer} [{self.category}]>"
 
 
 class Group:
@@ -44,20 +49,14 @@ class Group:
         balances = {m: 0.0 for m in self.members}
         for e in self.expenses:
             share = e.amount / len(e.participants)
-            # Payer initially covers full amount
             balances[e.payer] += e.amount
-            # Each participant owes their share
             for p in e.participants:
                 balances[p] -= share
-        # Round to 2 decimals for display
         return {m: round(b, 2) for m, b in balances.items()}
 
 
 def compute_settlements(balances: dict[str, float]) -> list[tuple[str, str, float]]:
-    """
-    Given net balances, compute minimal settlement transactions.
-    Each tuple: (from_person, to_person, amount).
-    """
+    """Greedy settlement algorithm: who pays whom and how much."""
     eps = 0.01
     creditors = [[m, b] for m, b in balances.items() if b > eps]
     debtors = [[m, -b] for m, b in balances.items() if b < -eps]
@@ -72,13 +71,12 @@ def compute_settlements(balances: dict[str, float]) -> list[tuple[str, str, floa
         debtor, debt_amt = debtors[i]
         creditor, cred_amt = creditors[j]
         transfer = min(debt_amt, cred_amt)
-        if transfer > 0:
-            settlements.append((debtor, creditor, round(transfer, 2)))
-            debtors[i][1] -= transfer
-            creditors[j][1] -= transfer
-        if abs(debtors[i][1]) < eps:
+        settlements.append((debtor, creditor, round(transfer, 2)))
+        debtors[i][1] -= transfer
+        creditors[j][1] -= transfer
+        if debtors[i][1] < eps:
             i += 1
-        if abs(creditors[j][1]) < eps:
+        if creditors[j][1] < eps:
             j += 1
 
     return settlements
