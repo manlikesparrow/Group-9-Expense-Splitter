@@ -1,0 +1,27 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv / Pipenv
+.env
+.venv
+env/
+venv/
+Pipfile.lock
+
+# pytest cache
+.pytest_cache/
+.coverage
+
+# Jupyter notebooks
+.ipynb_checkpoints
+
+# IDE / Editor settings
+.vscode/
+.idea/
+
+# MacOS / Windows system files
+.DS_Store
+Thumbs.db
