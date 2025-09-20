@@ -1,5 +1,4 @@
 import gui
-from gui import Expense
 
 def main():
     gui.start()
