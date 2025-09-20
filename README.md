@@ -1,7 +1,3 @@
-Requirements
-Python 3.10+
-pipenv (for dependency management)
-
 # Group 9: Expense Splitter App
 
 📌 Project Summary
