@@ -43,3 +43,22 @@ python src/app.py
 
 Run tests:
 pytest -q
+
+👥 Team Roles
+
+-Coordinator / Lead: Responsible for scheduling meetings, ensuring the team meets deadlines, and overseeing the final submission.  
+-Developer (Core Logic): Responsible for writing the main application code and implementing the core functionality of the MVP.  
+-QA / CI & Tests: Responsible for writing the pytest tests, setting up Continuous Integration (CI), and ensuring code quality.  
+-Docs / Presenter: Responsible for writing the README, the final report, and creating the demo video and presentation script.  
+
+Team member names:
+Clinton Ndubueze - Coordinator / Lead
+Israel Longji Luka - Developer(Core Logic)
+Sulaiman Rabiu - Developer(Demo)
+Ajani Oluwajomiloju - Developer(UI)
+Amina Baba Gujbawu - Developer(GUI)
+Taheer Ibrahim Maibiu - Documentation
+Olakanmi Oluwatobiloba - Q/A(Tests)
+Agudiegwu Kamsiyochi Unique - Developer(Data)
+Timothy Celina - Presenter
+Nduwuba Daniel Chemuachefulam -QA(CI) & Tests
