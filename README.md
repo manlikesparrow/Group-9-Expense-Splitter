@@ -42,7 +42,7 @@ Built with **Python 3.13+, Tkinter, pandas, and matplotlib**.
 ## Getting Started
 
 ### Prerequisites
-- Python 3.10
+- Python 3.13
 - [Pipenv](https://pipenv.pypa.io/en/latest/)
 
 ### Setup
