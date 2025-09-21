@@ -1,9 +1,10 @@
-# run as: python -m src.gui  OR  python src/gui.py
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import csv
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Import core with fallback so running as script or package both work
 try:
@@ -46,6 +47,7 @@ class ExpenseApp:
         ttk.Label(frame_expense, text="Amount ($):").grid(row=0, column=0, sticky="w", padx=4, pady=2)
         self.amount_entry = ttk.Entry(frame_expense, width=18)
         self.amount_entry.grid(row=0, column=1, padx=4, pady=2)
+        # add $ placeholder
         self.amount_entry.insert(0, "$")
         self.amount_entry.bind("<FocusIn>", self._clear_amount_placeholder)
         self.amount_entry.bind("<FocusOut>", self._restore_amount_placeholder)
@@ -99,6 +101,7 @@ class ExpenseApp:
         self.tree.pack(fill="both", expand=True, padx=6, pady=6)
         self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
 
+        # Buttons to edit selected transaction
         frame_edit = ttk.Frame(frame_list)
         frame_edit.pack(fill="x", padx=6, pady=(0,6))
         ttk.Label(frame_edit, text="Selected category:").pack(side="left", padx=4)
@@ -117,6 +120,7 @@ class ExpenseApp:
         self.balance_title.pack()
         self.balances_text = tk.Text(left_panel, height=8, width=40)
         self.balances_text.pack(padx=4, pady=6)
+        # tags for balances
         self.balances_text.tag_config("receives", foreground="green")
         self.balances_text.tag_config("owes", foreground="red")
         self.balances_text.tag_config("settled", foreground="black")
@@ -128,9 +132,19 @@ class ExpenseApp:
         self.settlement_title.pack()
         self.settlements_text = tk.Text(right_panel, height=8, width=40)
         self.settlements_text.pack(padx=4, pady=6)
+        # tags for settlement names & amount
         self.settlements_text.tag_config("payer", foreground="red")
         self.settlements_text.tag_config("receiver", foreground="green")
         self.settlements_text.tag_config("amount", font=("Arial", 10, "bold"))
+
+        # # ------ Charts ------
+        # frame_charts = ttk.LabelFrame(root, text="Charts")
+        # frame_charts.pack(fill="both", expand=True, padx=8, pady=6)
+
+        # self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(8, 3))
+        # plt.tight_layout()
+        # self.canvas = FigureCanvasTkAgg(self.fig, master=frame_charts)
+        # self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
         # Initial refresh
         self.refresh_dashboard()
@@ -168,10 +182,16 @@ class ExpenseApp:
             participants = [p.strip() for p in self.participants_entry.get().split(",") if p.strip()]
             desc = self.desc_entry.get().strip()
             category = self.category_entry.get().strip() or "Uncategorized"
+            # validate members exist
+            # missing = set([payer]) | set(participants) - set(self.group.members)
+            # if missing:
+            #     messagebox.showerror("Error", f"These members are missing: {', '.join(missing)}. Add them first.")
+            #     return
             exp = Expense(amount, payer, participants, desc, category, date=datetime.now().date())
             self.group.add_expense(exp)
             item = self.tree.insert("", "end", values=(exp.date.isoformat(), exp.payer, f"${exp.amount:.2f}", exp.category, exp.description))
             self.tree_item_map[item] = exp
+            # clear form
             self.amount_entry.delete(0, tk.END); self.amount_entry.insert(0, "$")
             self.payer_entry.delete(0, tk.END)
             self.participants_entry.delete(0, tk.END)
@@ -202,6 +222,7 @@ class ExpenseApp:
         exp = self.tree_item_map.get(item)
         if exp:
             exp.category = new_cat
+            # update tree row
             self.tree.item(item, values=(exp.date.isoformat(), exp.payer, f"${exp.amount:.2f}", exp.category, exp.description))
             self.refresh_dashboard()
 
@@ -220,7 +241,9 @@ class ExpenseApp:
             self.month_filter.set("All")
 
     def refresh_dashboard(self):
+        # update filters
         self.update_filters()
+        # update tree (with filters)
         self.tree.delete(*self.tree.get_children())
         self.tree_item_map.clear()
         cat_filter = self.category_filter.get()
@@ -233,6 +256,7 @@ class ExpenseApp:
             item = self.tree.insert("", "end", values=(exp.date.isoformat(), exp.payer, f"${exp.amount:.2f}", exp.category, exp.description))
             self.tree_item_map[item] = exp
 
+        # update summary
         balances = self.group.net_balances()
         total_balance = sum(balances.values())
         now = datetime.now()
@@ -240,12 +264,14 @@ class ExpenseApp:
         self.total_balance_label.config(text=f"Total Balance: ${total_balance:.2f}")
         self.monthly_spend_label.config(text=f"Monthly Spend: ${monthly_spend:.2f}")
 
+        # update balances panel
         self.balance_title.config(text=f"Balances (last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')})")
         self.balances_text.delete("1.0", tk.END)
         for m, b in balances.items():
             tag = "receives" if b > 0 else "owes" if b < 0 else "settled"
             self.balances_text.insert(tk.END, f"{m}: ${b:.2f} ({'receives' if b>0 else 'owes' if b<0 else 'settled'})\n", tag)
 
+        # update settlements panel
         self.settlement_title.config(text=f"Settlements (last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')})")
         self.settlements_text.delete("1.0", tk.END)
         settlements = compute_settlements(balances)
@@ -253,12 +279,44 @@ class ExpenseApp:
             self.settlements_text.insert(tk.END, "All settled!\n")
         else:
             for fr, to, amt in settlements:
+                # insert with tags so payer red, receiver green, amount bold
                 self.settlements_text.insert(tk.END, fr, "payer")
                 self.settlements_text.insert(tk.END, " pays ")
                 self.settlements_text.insert(tk.END, to, "receiver")
                 self.settlements_text.insert(tk.END, f": ${amt:.2f}\n", "amount")
 
-    # ---------- CSV import ----------
+        # # update charts
+        # self.ax1.clear(); self.ax2.clear()
+        # if self.group.expenses:
+        #     df = pd.DataFrame([{
+        #         "date": pd.to_datetime(e.date),
+        #         "amount": e.amount,
+        #         "category": e.category
+        #     } for e in self.group.expenses])
+        #     # Pie: category for current month
+        #     now = datetime.now()
+        #     curr_df = df[(df["date"].dt.year == now.year) & (df["date"].dt.month == now.month)]
+        #     if not curr_df.empty:
+        #         s = curr_df.groupby("category")["amount"].sum()
+        #         s.plot(kind="pie", autopct="%1.1f%%", ax=self.ax1)
+        #         self.ax1.set_ylabel("")
+        #         self.ax1.set_title(f"Category share ({now.strftime('%Y-%m')})")
+        #     else:
+        #         self.ax1.text(0.5, 0.5, "No data for current month", ha="center")
+        #         self.ax1.set_axis_off()
+        #     # Bar: monthly spend for last 6 months
+        #     df["month"] = df["date"].dt.to_period("M").dt.to_timestamp()
+        #     last_month = datetime(now.year, now.month, 1)
+        #     months = [last_month - pd.DateOffset(months=i) for i in range(5, -1, -1)]
+        #     months_ts = [m for m in months]
+        #     monthly = df.groupby("month")["amount"].sum().reindex(months_ts, fill_value=0)
+        #     monthly.index = [m.strftime("%Y-%m") for m in monthly.index]
+        #     monthly.plot(kind="bar", ax=self.ax2)
+        #     self.ax2.set_title("Monthly spend (last 6 months)")
+        #     self.ax2.set_xlabel("")
+        # self.canvas.draw()
+
+    # ---------- CSV import / normalization ----------
     def import_csv(self):
         file = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
         if not file:
@@ -269,6 +327,7 @@ class ExpenseApp:
             messagebox.showerror("Error", f"Could not read CSV: {e}")
             return
 
+        # Normalize column names (case-insensitive)
         cols = {c.lower().strip(): c for c in df.columns}
         def get_col(*keys, default=None):
             for k in keys:
@@ -276,6 +335,7 @@ class ExpenseApp:
                     return cols[k]
             return default
 
+        # possible keys
         col_date = get_col("date", "datetime", "timestamp")
         col_amount = get_col("amount", "amt", "value", "cost")
         col_payer = get_col("payer", "paid_by", "payee", "from")
@@ -283,7 +343,7 @@ class ExpenseApp:
         col_cat = get_col("category", "cat")
 
         if not col_amount or not col_payer:
-            messagebox.showerror("Error", "CSV must contain at least 'Amount' and 'Payer' columns.")
+            messagebox.showerror("Error", "CSV must contain at least 'Amount' and 'Payer' columns (case-insensitive).")
             return
 
         added_members = set()
@@ -296,14 +356,17 @@ class ExpenseApp:
                 continue
             payer = str(row[col_payer]).strip()
             participants = []
+            # try to detect participants column
             pcol = get_col("participants", "participant", "people")
             if pcol and pd.notna(row[pcol]):
                 participants = [p.strip() for p in str(row[pcol]).split(",") if p.strip()]
             else:
-                participants = [payer]
+                participants = [payer]  # minimal assumption
 
             desc = str(row[col_desc]) if col_desc and pd.notna(row[col_desc]) else ""
             category = str(row[col_cat]) if col_cat and pd.notna(row[col_cat]) else "Imported"
+            # parse date if present
+            d = None
             if col_date and pd.notna(row[col_date]):
                 try:
                     d = pd.to_datetime(row[col_date]).date()
@@ -312,6 +375,7 @@ class ExpenseApp:
             else:
                 d = datetime.now().date()
 
+            # auto-add payer/participants (inform user later)
             for m in [payer] + participants:
                 if m and m not in self.group.members:
                     self.group.add_member(m)
@@ -359,7 +423,8 @@ class ExpenseApp:
         messagebox.showinfo("Export", f"Transactions exported to {path}")
 
 
-def start():
+if __name__ == "__main__":
     root = tk.Tk()
     app = ExpenseApp(root)
     root.mainloop()
+
