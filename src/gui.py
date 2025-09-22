@@ -359,7 +359,7 @@ class ExpenseApp:
         messagebox.showinfo("Export", f"Transactions exported to {path}")
 
 
-def start():
+if __name__ == '__main__':
     root = tk.Tk()
     app = ExpenseApp(root)
     root.mainloop()
